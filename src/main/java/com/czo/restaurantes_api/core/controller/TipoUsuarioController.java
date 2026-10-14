@@ -1,10 +1,10 @@
 package com.czo.restaurantes_api.core.controller;
 
-import com.czo.restaurantes_api.core.dto.AtualizarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.CriarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.ListaTiposUsuarioOutputDto;
-import com.czo.restaurantes_api.core.dto.TipoUsuarioOutputDto;
-import com.czo.restaurantes_api.core.usecase.*;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.AtualizarTipoUsuarioInputDto;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.CriarTipoUsuarioInputDto;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.ListaTiposUsuarioOutputDto;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputDto;
+import com.czo.restaurantes_api.core.usecase.tipoUsuario.*;
 
 import java.util.UUID;
 

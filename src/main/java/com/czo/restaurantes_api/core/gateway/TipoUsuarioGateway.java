@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TipoUsuarioGateway {
+
     Optional<TipoUsuario> obterPorId(UUID id);
     Optional<TipoUsuario> obterPorNome(String nomeTipo);
     List<TipoUsuario> obterTodos();

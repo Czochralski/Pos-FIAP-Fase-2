@@ -6,13 +6,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TipoUsuarioMapper {
+
     public TipoUsuario toDomain(TipoUsuarioEntity entity) {
+
         return TipoUsuario.reconstruir(
                 entity.getId(),
                 entity.getNomeTipo());
     }
 
     public TipoUsuarioEntity toEntity(TipoUsuario domain) {
+
         return new TipoUsuarioEntity(
                 domain.getId(),
                 domain.getNomeTipo());

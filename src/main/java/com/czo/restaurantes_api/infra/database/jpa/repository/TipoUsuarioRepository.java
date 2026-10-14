@@ -7,5 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TipoUsuarioRepository extends JpaRepository<TipoUsuarioEntity, UUID> {
+
     Optional<TipoUsuarioEntity> findByNomeTipoIgnoreCase(String nomeTipo);
 }
