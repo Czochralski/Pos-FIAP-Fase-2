@@ -18,28 +18,28 @@ public class RestauranteConfiguration {
     }
 
     @Bean
-    public ListarRestaurantesUsecase listarRestaurantesUsecase(RestauranteGateway gateway) {
+    public ListarRestaurantesUsecase listarRestaurantesUsecase(RestauranteGateway restauranteGateway) {
 
-        return ListarRestaurantesUsecase.create(gateway);
+        return ListarRestaurantesUsecase.create(restauranteGateway);
     }
 
     @Bean
-    public BuscarRestauranteUsecase buscarRestauranteUsecase(RestauranteGateway gateway) {
+    public BuscarRestauranteUsecase buscarRestauranteUsecase(RestauranteGateway restauranteGateway) {
 
-        return BuscarRestauranteUsecase.create(gateway);
+        return BuscarRestauranteUsecase.create(restauranteGateway);
     }
 
     @Bean
-    public AtualizarRestauranteUsecase atualizarRestauranteUsecase(RestauranteGateway restauranteGateway,
-                                                                   UsuarioGateway usuarioGateway) {
+    public AtualizarRestauranteUsecase atualizarRestauranteUsecase(RestauranteGateway restauranteGateway) {
 
-        return AtualizarRestauranteUsecase.create(restauranteGateway, usuarioGateway);
+        return AtualizarRestauranteUsecase.create(restauranteGateway);
     }
 
     @Bean
-    public ExcluirRestauranteUsecase excluirRestauranteUsecase(RestauranteGateway gateway) {
+    public ExcluirRestauranteUsecase excluirRestauranteUsecase(RestauranteGateway restauranteGateway,
+                                                               UsuarioGateway usuarioGateway) {
 
-        return ExcluirRestauranteUsecase.create(gateway);
+        return ExcluirRestauranteUsecase.create(restauranteGateway, usuarioGateway);
     }
 
     @Bean

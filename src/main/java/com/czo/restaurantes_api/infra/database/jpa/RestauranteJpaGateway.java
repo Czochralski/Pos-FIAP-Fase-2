@@ -51,4 +51,10 @@ public class RestauranteJpaGateway implements RestauranteGateway {
 
         repository.deleteById(id);
     }
+
+    @Override
+    public boolean usuarioDono(UUID usuarioId, UUID restauranteId) {
+
+        return repository.usuarioDono(usuarioId, restauranteId);
+    }
 }

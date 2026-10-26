@@ -18,9 +18,6 @@ public record AtualizarRestauranteJson(
         String tipoCozinha,
 
         @NotBlank
-        String horarioFuncionamento,
-
-        @NotNull
-        UUID donoId
+        String horarioFuncionamento
 ) {
 }

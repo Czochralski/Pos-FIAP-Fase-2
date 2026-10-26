@@ -25,6 +25,6 @@ public class BuscarTipoUsuarioUsecase {
         var tipo = gateway.obterPorId(id)
                 .orElseThrow(() -> new TipoUsuarioNaoEncontradoException(id));
 
-        return new TipoUsuarioOutputDto(tipo.getId(), tipo.getNomeTipo());
+        return new TipoUsuarioOutputDto(tipo.getId(), tipo.getNomeTipo(), tipo.isSistema());
     }
 }

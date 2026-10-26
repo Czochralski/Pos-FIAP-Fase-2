@@ -3,32 +3,44 @@ package com.czo.restaurantes_api.core.usecase.tipoUsuario;
 import com.czo.restaurantes_api.core.domain.TipoUsuario;
 import com.czo.restaurantes_api.core.dto.tipoUsuario.CriarTipoUsuarioInputDto;
 import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputDto;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputInsertDto;
+import com.czo.restaurantes_api.core.exception.DonoRestauranteInvalidoException;
 import com.czo.restaurantes_api.core.exception.TipoUsuarioJaExisteException;
 import com.czo.restaurantes_api.core.gateway.TipoUsuarioGateway;
+import com.czo.restaurantes_api.core.gateway.UsuarioGateway;
+
+import java.util.UUID;
 
 public class CriarTipoUsuarioUsecase {
 
     private final TipoUsuarioGateway gateway;
+    private final UsuarioGateway usuarioGateway;
 
-    private CriarTipoUsuarioUsecase(TipoUsuarioGateway gateway) {
+    private CriarTipoUsuarioUsecase(TipoUsuarioGateway gateway, UsuarioGateway usuarioGateway) {
 
         this.gateway = gateway;
+        this.usuarioGateway = usuarioGateway;
     }
 
-    public static CriarTipoUsuarioUsecase create(TipoUsuarioGateway gateway) {
+    public static CriarTipoUsuarioUsecase create(TipoUsuarioGateway gateway, UsuarioGateway usuarioGateway) {
 
-        return new CriarTipoUsuarioUsecase(gateway);
+        return new CriarTipoUsuarioUsecase(gateway, usuarioGateway);
     }
 
-    public TipoUsuarioOutputDto run(CriarTipoUsuarioInputDto input) {
+    public TipoUsuarioOutputInsertDto run(CriarTipoUsuarioInputDto input, UUID usuarioId) {
 
-        gateway.obterPorNome(input.nomeTipo()).ifPresent(tipo -> {
-            throw new TipoUsuarioJaExisteException(input.nomeTipo());
+        if (!usuarioGateway.usuarioDono(usuarioId)) {
+            throw new DonoRestauranteInvalidoException();
+        }
+
+        String nomeTipo = input.nomeTipo().trim();
+        gateway.obterPorNome(nomeTipo).ifPresent(tipo -> {
+            throw new TipoUsuarioJaExisteException(nomeTipo);
         });
 
-        TipoUsuario tipoUsuario = TipoUsuario.criar(input.nomeTipo());
+        TipoUsuario tipoUsuario = TipoUsuario.criar(nomeTipo);
         TipoUsuario salvo = gateway.criar(tipoUsuario);
 
-        return new TipoUsuarioOutputDto(salvo.getId(), salvo.getNomeTipo());
+        return new TipoUsuarioOutputInsertDto(salvo.getId(), salvo.getNomeTipo(), salvo.isSistema());
     }
 }

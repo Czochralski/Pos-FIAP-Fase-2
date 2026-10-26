@@ -21,7 +21,7 @@ public class ListarTiposUsuarioUsecase {
     public ListaTiposUsuarioOutputDto run() {
 
         var tipos = gateway.obterTodos().stream()
-                .map(tipo -> new TipoUsuarioOutputDto(tipo.getId(), tipo.getNomeTipo()))
+                .map(tipo -> new TipoUsuarioOutputDto(tipo.getId(), tipo.getNomeTipo(), tipo.isSistema()))
                 .toList();
 
         return new ListaTiposUsuarioOutputDto(tipos);

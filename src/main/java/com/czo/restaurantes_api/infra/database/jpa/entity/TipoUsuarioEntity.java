@@ -24,4 +24,7 @@ public class TipoUsuarioEntity {
 
     @Column(name = "nome_tipo", nullable = false, unique = true, length = 100)
     private String nomeTipo;
+
+    @Column(name = "sistema", nullable = false)
+    private boolean sistema;
 }

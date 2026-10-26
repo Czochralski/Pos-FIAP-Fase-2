@@ -1,9 +1,6 @@
 package com.czo.restaurantes_api.core.controller;
 
-import com.czo.restaurantes_api.core.dto.tipoUsuario.AtualizarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.CriarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.ListaTiposUsuarioOutputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputDto;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.*;
 import com.czo.restaurantes_api.core.usecase.tipoUsuario.*;
 
 import java.util.UUID;
@@ -35,8 +32,8 @@ public class TipoUsuarioController {
         return new TipoUsuarioController(criar, listar, buscar, atualizar, excluir);
     }
 
-    public TipoUsuarioOutputDto criar(CriarTipoUsuarioInputDto input) {
-        return criar.run(input);
+    public TipoUsuarioOutputInsertDto criar(CriarTipoUsuarioInputDto input, UUID usuarioId) {
+        return criar.run(input, usuarioId);
     }
 
     public ListaTiposUsuarioOutputDto listar() {
@@ -47,11 +44,11 @@ public class TipoUsuarioController {
         return buscar.run(id);
     }
 
-    public TipoUsuarioOutputDto atualizar(UUID id, AtualizarTipoUsuarioInputDto input) {
-        return atualizar.run(id, input);
+    public TipoUsuarioOutputDto atualizar(UUID id, AtualizarTipoUsuarioInputDto input, UUID usuarioId) {
+        return atualizar.run(id, input, usuarioId);
     }
 
-    public void excluir(UUID id) {
-        excluir.run(id);
+    public void excluir(UUID id, UUID usuarioId) {
+        excluir.run(id, usuarioId);
     }
 }

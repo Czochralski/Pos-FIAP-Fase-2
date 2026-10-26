@@ -8,6 +8,6 @@ public record CriarRestauranteInputDto(
         String nome,
         EnderecoInputDto endereco,
         String tipoCozinha,
-        String horarioFuncionamento,
-        UUID donoId) {
+        String horarioFuncionamento
+){
 }

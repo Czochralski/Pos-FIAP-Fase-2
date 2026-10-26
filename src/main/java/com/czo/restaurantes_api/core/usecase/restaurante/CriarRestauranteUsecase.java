@@ -3,10 +3,12 @@ package com.czo.restaurantes_api.core.usecase.restaurante;
 import com.czo.restaurantes_api.core.domain.Endereco;
 import com.czo.restaurantes_api.core.domain.Restaurante;
 import com.czo.restaurantes_api.core.dto.restaurante.CriarRestauranteInputDto;
-import com.czo.restaurantes_api.core.dto.restaurante.RestauranteOutputDto;
-import com.czo.restaurantes_api.core.exception.DonoRestauranteInvalidoException;
+import com.czo.restaurantes_api.core.dto.restaurante.RestauranteOutputInsertDto;
+import com.czo.restaurantes_api.core.exception.UsuarioSemPermissaoCriarRestauranteException;
 import com.czo.restaurantes_api.core.gateway.RestauranteGateway;
 import com.czo.restaurantes_api.core.gateway.UsuarioGateway;
+
+import java.util.UUID;
 
 public class CriarRestauranteUsecase {
 
@@ -25,10 +27,10 @@ public class CriarRestauranteUsecase {
         return new CriarRestauranteUsecase(restauranteGateway, usuarioGateway);
     }
 
-    public RestauranteOutputDto run(CriarRestauranteInputDto input) {
+    public RestauranteOutputInsertDto run(CriarRestauranteInputDto input, UUID usuarioId) {
 
-        if (!usuarioGateway.usuarioDono(input.donoId())) {
-            throw new DonoRestauranteInvalidoException(input.donoId());
+        if (!usuarioGateway.usuarioDono(usuarioId)) {
+            throw new UsuarioSemPermissaoCriarRestauranteException();
         }
 
         var enderecoInput = input.endereco();
@@ -37,10 +39,10 @@ public class CriarRestauranteUsecase {
                 enderecoInput.cidade(), enderecoInput.estado(), enderecoInput.cep());
 
         Restaurante restaurante = Restaurante.criar(input.nome(), endereco, input.tipoCozinha(),
-                input.horarioFuncionamento(), input.donoId());
+                input.horarioFuncionamento(), usuarioId);
 
         Restaurante salvo = restauranteGateway.criar(restaurante);
 
-        return RestauranteOutputMapper.toOutput(salvo);
+        return RestauranteOutputMapper.toOutputInsert(salvo);
     }
 }

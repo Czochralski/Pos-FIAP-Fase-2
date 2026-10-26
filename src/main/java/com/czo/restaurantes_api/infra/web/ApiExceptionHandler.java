@@ -1,46 +1,83 @@
 package com.czo.restaurantes_api.infra.web;
 
-import com.czo.restaurantes_api.core.exception.DonoRestauranteInvalidoException;
-import com.czo.restaurantes_api.core.exception.RestauranteNaoEncontradoException;
-import com.czo.restaurantes_api.core.exception.TipoUsuarioJaExisteException;
-import com.czo.restaurantes_api.core.exception.TipoUsuarioNaoEncontradoException;
+import com.czo.restaurantes_api.core.exception.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    @ExceptionHandler({RestauranteNaoEncontradoException.class, TipoUsuarioNaoEncontradoException.class})
-    public ResponseEntity<Map<String, String>> naoEncontrado(RuntimeException exception) {
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", exception.getMessage()));
+    @ExceptionHandler({
+            RestauranteNaoEncontradoException.class,
+            TipoUsuarioNaoEncontradoException.class,
+            ItemCardapioNaoEncontradoException.class
+    })
+    public ResponseEntity<ProblemDetail> naoEncontrado(RuntimeException exception) {
+        return resposta(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
-    @ExceptionHandler(TipoUsuarioJaExisteException.class)
-    public ResponseEntity<Map<String, String>> conflito(RuntimeException exception) {
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("erro", exception.getMessage()));
+    @ExceptionHandler({
+            UsuarioSemPermissaoCardapioException.class,
+            DonoRestauranteInvalidoException.class,
+            UsuarioSemPermissaoCriarRestauranteException.class,
+            UsuarioSemPermissaoAtualizarRestauranteException.class
+    })
+    public ResponseEntity<ProblemDetail> semPermissao(RuntimeException exception) {
+        return resposta(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
-    @ExceptionHandler({DonoRestauranteInvalidoException.class, IllegalArgumentException.class})
-    public ResponseEntity<Map<String, String>> requisicaoInvalida(RuntimeException exception) {
+    @ExceptionHandler({
+            TipoUsuarioJaExisteException.class,
+            TipoUsuarioSistemaProtegidoException.class
+    })
+    public ResponseEntity<ProblemDetail> conflito(RuntimeException exception) {
+        return resposta(HttpStatus.CONFLICT, exception.getMessage());
+    }
 
-        return ResponseEntity.badRequest().body(Map.of("erro", exception.getMessage()));
+    @ExceptionHandler({
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<ProblemDetail> requisicaoInvalida(RuntimeException exception) {
+        return resposta(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> validacaoEntrada(MethodArgumentNotValidException exception) {
+    public ResponseEntity<ProblemDetail> validacaoEntrada(
+            MethodArgumentNotValidException exception) {
 
-        String mensagem = exception.getBindingResult().getFieldErrors().stream()
+        String mensagem = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .findFirst()
                 .orElse("Dados da requisição inválidos");
 
-        return ResponseEntity.badRequest().body(Map.of("erro", mensagem));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                mensagem
+        );
+
+        problem.setTitle("Erro de validação");
+
+        return ResponseEntity.badRequest().body(problem);
+    }
+
+    private ResponseEntity<ProblemDetail> resposta(
+            HttpStatus status,
+            String mensagem) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                status,
+                mensagem
+        );
+
+        return ResponseEntity
+                .status(status)
+                .body(problem);
     }
 }

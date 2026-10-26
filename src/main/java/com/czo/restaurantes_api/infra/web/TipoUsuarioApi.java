@@ -1,14 +1,13 @@
 package com.czo.restaurantes_api.infra.web;
 
 import com.czo.restaurantes_api.core.controller.TipoUsuarioController;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.AtualizarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.CriarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.ListaTiposUsuarioOutputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputDto;
+import com.czo.restaurantes_api.core.dto.tipoUsuario.*;
+import com.czo.restaurantes_api.infra.security.UsuarioAutenticado;
 import com.czo.restaurantes_api.infra.web.json.AtualizarTipoUsuarioJson;
 import com.czo.restaurantes_api.infra.web.json.CriarTipoUsuarioJson;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,9 +25,10 @@ public class TipoUsuarioApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TipoUsuarioOutputDto criar(@Valid @RequestBody CriarTipoUsuarioJson json) {
+    public TipoUsuarioOutputInsertDto criar(@Valid @RequestBody CriarTipoUsuarioJson json,
+                                            @AuthenticationPrincipal UsuarioAutenticado usuario) {
 
-        return controller.criar(new CriarTipoUsuarioInputDto(json.nomeTipo()));
+        return controller.criar(new CriarTipoUsuarioInputDto(json.nomeTipo()), usuario.getId());
     }
 
     @GetMapping
@@ -45,15 +45,17 @@ public class TipoUsuarioApi {
 
     @PutMapping("/{id}")
     public TipoUsuarioOutputDto atualizar(@PathVariable UUID id,
-                                          @Valid @RequestBody AtualizarTipoUsuarioJson json) {
+                                          @Valid @RequestBody AtualizarTipoUsuarioJson json,
+                                          @AuthenticationPrincipal UsuarioAutenticado usuario) {
 
-        return controller.atualizar(id, new AtualizarTipoUsuarioInputDto(json.nomeTipo()));
+        return controller.atualizar(id, new AtualizarTipoUsuarioInputDto(json.nomeTipo()), usuario.getId());
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void excluir(@PathVariable UUID id) {
+    public void excluir(@PathVariable UUID id,
+                        @AuthenticationPrincipal UsuarioAutenticado usuario) {
 
-        controller.excluir(id);
+        controller.excluir(id, usuario.getId());
     }
 }

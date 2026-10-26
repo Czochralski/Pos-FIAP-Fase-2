@@ -1,9 +1,6 @@
 package com.czo.restaurantes_api.infra.database.jpa.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,4 +20,14 @@ public class UsuarioEntity {
 
     @Column(name = "nome", nullable = false)
     private String nome;
+
+    @Column(name = "login", nullable = false, unique = true)
+    private String login;
+
+    @Column(name = "senha", nullable = false)
+    private String senha;
+
+    @ManyToOne
+    @JoinColumn(name = "tipo_usuario_id", nullable = false)
+    private TipoUsuarioEntity tipoUsuario;
 }

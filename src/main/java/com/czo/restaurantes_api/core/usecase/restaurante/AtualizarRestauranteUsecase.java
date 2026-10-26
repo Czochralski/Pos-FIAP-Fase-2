@@ -4,38 +4,33 @@ import com.czo.restaurantes_api.core.domain.Endereco;
 import com.czo.restaurantes_api.core.domain.Restaurante;
 import com.czo.restaurantes_api.core.dto.restaurante.AtualizarRestauranteInputDto;
 import com.czo.restaurantes_api.core.dto.restaurante.RestauranteOutputDto;
-import com.czo.restaurantes_api.core.exception.DonoRestauranteInvalidoException;
 import com.czo.restaurantes_api.core.exception.RestauranteNaoEncontradoException;
+import com.czo.restaurantes_api.core.exception.UsuarioSemPermissaoAtualizarRestauranteException;
 import com.czo.restaurantes_api.core.gateway.RestauranteGateway;
-import com.czo.restaurantes_api.core.gateway.UsuarioGateway;
 
 import java.util.UUID;
 
 public class AtualizarRestauranteUsecase {
 
     private final RestauranteGateway restauranteGateway;
-    private final UsuarioGateway usuarioGateway;
 
-    private AtualizarRestauranteUsecase(RestauranteGateway restauranteGateway,
-                                        UsuarioGateway usuarioGateway) {
+    private AtualizarRestauranteUsecase(RestauranteGateway restauranteGateway) {
 
         this.restauranteGateway = restauranteGateway;
-        this.usuarioGateway = usuarioGateway;
     }
 
-    public static AtualizarRestauranteUsecase create(RestauranteGateway restauranteGateway,
-                                                     UsuarioGateway usuarioGateway) {
+    public static AtualizarRestauranteUsecase create(RestauranteGateway restauranteGateway) {
 
-        return new AtualizarRestauranteUsecase(restauranteGateway, usuarioGateway);
+        return new AtualizarRestauranteUsecase(restauranteGateway);
     }
 
-    public RestauranteOutputDto run(UUID id, AtualizarRestauranteInputDto input) {
+    public RestauranteOutputDto run(UUID id, AtualizarRestauranteInputDto input, UUID usuarioId) {
 
         Restaurante restaurante = restauranteGateway.obterPorId(id)
                 .orElseThrow(() -> new RestauranteNaoEncontradoException(id));
 
-        if (!usuarioGateway.usuarioDono(input.donoId())) {
-            throw new DonoRestauranteInvalidoException(input.donoId());
+        if (!restauranteGateway.usuarioDono(usuarioId, restaurante.getId())){
+            throw new UsuarioSemPermissaoAtualizarRestauranteException();
         }
 
         var enderecoInput = input.endereco();
@@ -44,7 +39,7 @@ public class AtualizarRestauranteUsecase {
                 enderecoInput.cidade(), enderecoInput.estado(), enderecoInput.cep());
 
         restaurante.atualizar(input.nome(), endereco, input.tipoCozinha(),
-                input.horarioFuncionamento(), input.donoId());
+                input.horarioFuncionamento(), usuarioId);
 
         Restaurante salvo = restauranteGateway.atualizar(restaurante);
 

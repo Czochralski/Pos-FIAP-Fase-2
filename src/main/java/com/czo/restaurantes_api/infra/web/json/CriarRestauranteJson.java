@@ -3,7 +3,6 @@ package com.czo.restaurantes_api.infra.web.json;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.UUID;
 
 public record CriarRestauranteJson(
 
@@ -17,9 +16,6 @@ public record CriarRestauranteJson(
         String tipoCozinha,
 
         @NotBlank
-        String horarioFuncionamento,
-
-        @NotNull
-        UUID donoId
+        String horarioFuncionamento
 ) {
 }

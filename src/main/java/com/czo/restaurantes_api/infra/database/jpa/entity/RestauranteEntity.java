@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -15,6 +17,16 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestauranteEntity {
+
+    public RestauranteEntity(UUID id, String nome, EnderecoEntity endereco, String tipoCozinha,
+                             String horarioFuncionamento, UUID donoId) {
+        this.id = id;
+        this.nome = nome;
+        this.endereco = endereco;
+        this.tipoCozinha = tipoCozinha;
+        this.horarioFuncionamento = horarioFuncionamento;
+        this.donoId = donoId;
+    }
 
     @Id
     private UUID id;
@@ -34,4 +46,11 @@ public class RestauranteEntity {
 
     @Column(name = "dono_id", nullable = false)
     private UUID donoId;
+
+    @OneToMany(
+            mappedBy = "restaurante",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true
+    )
+    private List<ItemCardapioEntity> itensCardapio = new ArrayList<>();
 }

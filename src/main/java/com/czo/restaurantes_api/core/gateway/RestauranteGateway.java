@@ -13,4 +13,5 @@ public interface RestauranteGateway {
     Restaurante criar(Restaurante restaurante);
     Restaurante atualizar(Restaurante restaurante);
     void excluir(UUID id);
+    boolean usuarioDono(UUID usuarioId, UUID restauranteId);
 }

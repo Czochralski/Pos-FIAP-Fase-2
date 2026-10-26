@@ -6,5 +6,6 @@ public record EnderecoInputDto(
         String bairro,
         String cidade,
         String estado,
-        String cep) {
+        String cep
+){
 }

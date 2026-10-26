@@ -4,5 +4,7 @@ import java.util.UUID;
 
 public record TipoUsuarioOutputDto(
         UUID id,
-        String nomeTipo) {
+        String nomeTipo,
+        boolean sistema
+) {
 }

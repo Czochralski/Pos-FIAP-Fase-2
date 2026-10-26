@@ -2,6 +2,7 @@ package com.czo.restaurantes_api.infra.config;
 
 import com.czo.restaurantes_api.core.controller.TipoUsuarioController;
 import com.czo.restaurantes_api.core.gateway.TipoUsuarioGateway;
+import com.czo.restaurantes_api.core.gateway.UsuarioGateway;
 import com.czo.restaurantes_api.core.usecase.tipoUsuario.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,9 +11,9 @@ import org.springframework.context.annotation.Configuration;
 public class TipoUsuarioConfiguration {
 
     @Bean
-    public CriarTipoUsuarioUsecase criarTipoUsuarioUsecase(TipoUsuarioGateway gateway) {
+    public CriarTipoUsuarioUsecase criarTipoUsuarioUsecase(TipoUsuarioGateway gateway, UsuarioGateway usuarioGateway) {
 
-        return CriarTipoUsuarioUsecase.create(gateway);
+        return CriarTipoUsuarioUsecase.create(gateway, usuarioGateway);
     }
 
     @Bean
@@ -28,15 +29,17 @@ public class TipoUsuarioConfiguration {
     }
 
     @Bean
-    public AtualizarTipoUsuarioUsecase atualizarTipoUsuarioUsecase(TipoUsuarioGateway gateway) {
+    public AtualizarTipoUsuarioUsecase atualizarTipoUsuarioUsecase(TipoUsuarioGateway gateway,
+                                                                   UsuarioGateway usuarioGateway) {
 
-        return AtualizarTipoUsuarioUsecase.create(gateway);
+        return AtualizarTipoUsuarioUsecase.create(gateway, usuarioGateway);
     }
 
     @Bean
-    public ExcluirTipoUsuarioUsecase excluirTipoUsuarioUsecase(TipoUsuarioGateway gateway) {
+    public ExcluirTipoUsuarioUsecase excluirTipoUsuarioUsecase(TipoUsuarioGateway gateway,
+                                                               UsuarioGateway usuarioGateway) {
 
-        return ExcluirTipoUsuarioUsecase.create(gateway);
+        return ExcluirTipoUsuarioUsecase.create(gateway, usuarioGateway);
     }
 
     @Bean
