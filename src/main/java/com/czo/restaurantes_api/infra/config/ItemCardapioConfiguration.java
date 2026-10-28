@@ -14,28 +14,33 @@ public class ItemCardapioConfiguration {
     @Bean
     public CriarItemCardapioUsecase criarItemCardapioUsecase(ItemCardapioGateway itemGateway,
                                                              ValidadorItemCardapio validadorItemCardapio) {
+
         return CriarItemCardapioUsecase.create(itemGateway, validadorItemCardapio);
     }
 
     @Bean
     public ListarItensCardapioUsecase listarItensCardapioUsecase(ItemCardapioGateway gateway) {
+
         return ListarItensCardapioUsecase.create(gateway);
     }
 
     @Bean
     public BuscarItemCardapioUsecase buscarItemCardapioUsecase(ItemCardapioGateway gateway) {
+
         return BuscarItemCardapioUsecase.create(gateway);
     }
 
     @Bean
     public AtualizarItemCardapioUsecase atualizarItemCardapioUsecase(ItemCardapioGateway itemGateway,
                                                                      ValidadorItemCardapio validadorItemCardapio) {
+
         return AtualizarItemCardapioUsecase.create(itemGateway, validadorItemCardapio);
     }
 
     @Bean
     public ExcluirItemCardapioUsecase excluirItemCardapioUsecase(ItemCardapioGateway itemGateway,
                                                                  ValidadorItemCardapio validadorItemCardapio) {
+
         return ExcluirItemCardapioUsecase.create(itemGateway, validadorItemCardapio);
     }
 
@@ -45,6 +50,7 @@ public class ItemCardapioConfiguration {
                                                          BuscarItemCardapioUsecase buscar,
                                                          AtualizarItemCardapioUsecase atualizar,
                                                          ExcluirItemCardapioUsecase excluir) {
+
         return ItemCardapioController.create(criar, listar, buscar, atualizar, excluir);
     }
 

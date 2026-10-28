@@ -1,7 +1,6 @@
 package com.czo.restaurantes_api.core.dto.itemCardapio;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record AtualizarItemCardapioInputDto(
         String nome,

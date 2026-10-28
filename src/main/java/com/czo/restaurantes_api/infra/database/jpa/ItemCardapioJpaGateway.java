@@ -20,21 +20,25 @@ public class ItemCardapioJpaGateway implements ItemCardapioGateway {
 
     @Override
     public Optional<ItemCardapio> obterPorId(UUID id) {
+
         return repository.findById(id).map(mapper::toDomain);
     }
 
     @Override
     public List<ItemCardapio> obterPorRestaurante(UUID restauranteId) {
+
         return repository.findByRestauranteId(restauranteId).stream().map(mapper::toDomain).toList();
     }
 
     @Override
     public ItemCardapio criar(ItemCardapio itemCardapio) {
+
         return mapper.toDomain(repository.save(mapper.toEntity(itemCardapio)));
     }
 
     @Override
     public ItemCardapio atualizar(ItemCardapio itemCardapio) {
+
         if (!repository.existsById(itemCardapio.getId())) {
             throw new IllegalArgumentException("Item do cardápio não existe: " + itemCardapio.getId());
         }
@@ -43,6 +47,7 @@ public class ItemCardapioJpaGateway implements ItemCardapioGateway {
 
     @Override
     public void excluir(UUID id) {
+
         repository.deleteById(id);
     }
 }

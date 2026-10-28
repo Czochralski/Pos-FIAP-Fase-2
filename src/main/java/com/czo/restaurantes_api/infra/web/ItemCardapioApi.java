@@ -34,11 +34,13 @@ public class ItemCardapioApi {
 
     @GetMapping
     public ListaItensCardapioOutputDto listar(@PathVariable UUID restauranteId) {
+
         return controller.listar(restauranteId);
     }
 
     @GetMapping("/{itemCardapioId}")
     public ItemCardapioOutputDto buscar(@PathVariable UUID restauranteId, @PathVariable UUID itemCardapioId) {
+
         return controller.buscar(restauranteId, itemCardapioId);
     }
 
@@ -57,6 +59,7 @@ public class ItemCardapioApi {
     public void excluir(@PathVariable UUID restauranteId,
                         @PathVariable UUID itemCardapioId,
                         @AuthenticationPrincipal UsuarioAutenticado usuario) {
+
         controller.excluir(restauranteId, itemCardapioId, usuario.getId());
     }
 }

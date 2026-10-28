@@ -18,6 +18,7 @@ public class ApiExceptionHandler {
             ItemCardapioNaoEncontradoException.class
     })
     public ResponseEntity<ProblemDetail> naoEncontrado(RuntimeException exception) {
+
         return resposta(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
@@ -28,6 +29,7 @@ public class ApiExceptionHandler {
             UsuarioSemPermissaoAtualizarRestauranteException.class
     })
     public ResponseEntity<ProblemDetail> semPermissao(RuntimeException exception) {
+
         return resposta(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
@@ -36,6 +38,7 @@ public class ApiExceptionHandler {
             TipoUsuarioSistemaProtegidoException.class
     })
     public ResponseEntity<ProblemDetail> conflito(RuntimeException exception) {
+
         return resposta(HttpStatus.CONFLICT, exception.getMessage());
     }
 
@@ -43,6 +46,7 @@ public class ApiExceptionHandler {
             IllegalArgumentException.class
     })
     public ResponseEntity<ProblemDetail> requisicaoInvalida(RuntimeException exception) {
+
         return resposta(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 

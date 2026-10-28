@@ -10,6 +10,7 @@ public class LegacyPasswordEncoder implements PasswordEncoder {
 
     @Override
     public String encode(CharSequence rawPassword) {
+
         return bcrypt.encode(rawPassword);
     }
 
