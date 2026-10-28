@@ -65,7 +65,9 @@ public class ItemCardapio {
         validarTexto(descricao, "Descrição é obrigatória");
         validarPreco(preco);
         validarTexto(foto, "Caminho da foto é obrigatório");
-        validarTexto(String.valueOf(restauranteId), "Restaurante do item é obrigatório");
+        if (restauranteId == null) {
+            throw new IllegalArgumentException("Restaurante do item é obrigatório");
+        }
     }
 
     private static void validarPreco(BigDecimal preco) {
