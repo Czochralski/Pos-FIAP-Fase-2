@@ -1,196 +1,109 @@
-# API de Restaurantes — Tech Challenge Fase 2
+# Restaurantes API
 
-API REST para cadastro e gerenciamento de restaurantes, tipos de usuário e itens de cardápio. O projeto foi desenvolvido em Java com Spring Boot e organizado em camadas seguindo os princípios de Clean Architecture.
-
-## Funcionalidades
-
-- Autenticação HTTP Basic e consulta do usuário autenticado.
-- CRUD de restaurantes, com validação de que operações de escrita sejam feitas pelo proprietário.
-- CRUD de tipos de usuário. Os tipos de sistema `CLIENTE` e `DONO` são protegidos contra alteração e exclusão.
-- CRUD de itens de cardápio vinculados a um restaurante.
-- Validação de dados de entrada e respostas de erro no formato `ProblemDetail`.
-- Versionamento do banco de dados com Flyway.
-
-O sistema possui tabela e usuários pré-cadastrados para autenticação, mas não expõe CRUD de usuários. A associação inicial entre usuário e tipo é feita pelas migrations do banco.
+API REST desenvolvida em Java 21 e Spring Boot para gerenciamento de restaurantes, tipos de usuário e itens de cardápio. O projeto faz parte do Tech Challenge da Fase 2 da pós-graduação FIAP e utiliza Clean Architecture para separar regras de negócio, interfaces e detalhes de infraestrutura.
 
 ## Tecnologias
 
 - Java 21
-- Spring Boot 4.1.1, Spring Web MVC e Spring Data JPA
+- Spring Boot 4.1.1
+- Spring Web MVC e Spring Data JPA / Hibernate
 - Spring Security com HTTP Basic
-- PostgreSQL 17
-- Flyway
-- JUnit, Spring MockMvc, H2 e JaCoCo para testes
+- PostgreSQL 17 e Flyway
+- Springdoc OpenAPI / Swagger UI
+- Maven Wrapper
+- Docker e Docker Compose
+- JUnit, Spring MockMvc, H2 e JaCoCo
+- Postman para chamadas e validação manual da API
 
-## Arquitetura
+## Pré-requisitos
 
-O código separa as regras de negócio dos detalhes de HTTP e persistência:
+Para executar a aplicação com Docker Compose, instale:
+
+| Requisito | Descrição |
+|---|---|
+| Docker Desktop | Executa os containers da aplicação e do PostgreSQL. |
+| Docker Compose | Incluído no Docker Desktop atual. |
+
+Para executar a aplicação diretamente no computador, também é necessário ter Java 21. O projeto inclui Maven Wrapper, portanto não é necessário instalar Maven separadamente.
+
+## Estrutura do projeto
+
+```text
+src/
+├── main/
+│   ├── java/com/czo/restaurantes_api/
+│   │   ├── core/
+│   │   │   ├── controller/
+│   │   │   ├── domain/
+│   │   │   ├── dto/
+│   │   │   ├── exception/
+│   │   │   ├── gateway/
+│   │   │   └── usecase/
+│   │   ├── infra/
+│   │   │   ├── config/
+│   │   │   ├── database/jpa/
+│   │   │   ├── security/
+│   │   │   └── web/
+│   │   └── RestaurantesApiApplication.java
+│   └── resources/db/migration/
+└── test/java/
+```
+
+### Arquitetura / camadas
+
+- **Core** contém o domínio, os casos de uso, as interfaces de persistência e os DTOs. Essa camada concentra as regras de negócio e não depende dos detalhes do banco ou da web.
+- **Controllers do core** encaminham as chamadas aos casos de uso.
+- **Gateways** definem as operações de persistência necessárias ao core.
+- **Infraestrutura web** expõe os endpoints REST, recebe e devolve JSON e converte as chamadas HTTP para os objetos usados pelo core.
+- **Infraestrutura JPA** implementa os gateways usando entidades e repositórios Spring Data.
+- **Segurança e configuração** conectam autenticação, banco de dados, casos de uso e endpoints.
 
 ```mermaid
 flowchart LR
-    API[infra.web — endpoints e JSON] --> Controller[core.controller]
+    Web[infra.web — API REST] --> Controller[core.controller]
     Controller --> UseCase[core.usecase]
     UseCase --> Domain[core.domain]
-    UseCase --> Port[core.gateway — interfaces]
-    Adapter[infra.database.jpa — gateways] -. implementa .-> Port
-    Adapter --> Repository[Spring Data JPA repositories]
+    UseCase --> Gateway[core.gateway]
+    Jpa[infra.database.jpa] -. implementa .-> Gateway
+    Jpa --> Repository[Spring Data JPA]
     Repository --> Database[(PostgreSQL)]
-    Config[infra.config e infra.security] --> API
-    Config --> Controller
 ```
 
-### Principais pacotes
+## Versionamento e endpoints
 
-| Pacote | Responsabilidade |
-|---|---|
-| `core.domain` | Entidades e regras de validação do domínio, como campos obrigatórios e preço positivo. |
-| `core.usecase` | Casos de uso, regras de autorização e coordenação dos gateways. |
-| `core.gateway` | Interfaces que definem as operações de persistência necessárias ao núcleo. |
-| `core.controller` | Fachadas que encaminham as chamadas da camada web aos casos de uso. |
-| `core.dto` | Objetos de entrada e saída usados entre as camadas. |
-| `infra.web` | Endpoints REST, conversão de JSON e tratamento centralizado de erros. |
-| `infra.database.jpa` | Implementações JPA dos gateways, entidades e repositórios. |
-| `infra.database.mapper` | Conversão entre entidades JPA e objetos de domínio. |
-| `infra.security` | Carregamento de usuários, identidade autenticada e codificação de senhas. |
-| `infra.config` | Configuração de segurança e criação dos componentes da aplicação. |
-
-## Requisitos
-
-- JDK 21 configurado em `JAVA_HOME`.
-- Docker com Docker Compose, ou uma instância PostgreSQL compatível configurada para o projeto.
-- Portas `5432` (PostgreSQL) e `8080` (API) disponíveis, salvo se você alterar as configurações.
-
-## Configuração e execução
-
-### 1. Iniciar o PostgreSQL local
-
-O `docker-compose.yml` cria um banco local chamado `restaurantes`:
-
-```powershell
-docker compose up -d postgres
-```
-
-Configuração local padrão:
-
-| Propriedade | Valor |
-|---|---|
-| Host e porta | `localhost:5432` |
-| Banco | `restaurantes` |
-| Usuário | `postgres` |
-| Senha | `postgres` |
-
-Esses valores estão em `docker-compose.yml` e `src/main/resources/application.yaml`. Para outro banco, ajuste as propriedades `spring.datasource` nesse arquivo ou sobrescreva-as pelas propriedades de ambiente do Spring Boot.
-
-### 2. Compilar e iniciar a API
-
-No PowerShell, a partir da pasta do projeto:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-Em Linux ou macOS:
-
-```bash
-./mvnw spring-boot:run
-```
-
-O Spring Boot executa automaticamente as migrations Flyway na inicialização. A API fica disponível em `http://localhost:8080`.
-
-### 3. Documentação OpenAPI
-
-Com a aplicação em execução, acesse:
-
-- Swagger UI: <http://localhost:8080/swagger-ui.html>
-- OpenAPI JSON: <http://localhost:8080/v3/api-docs>
-
-Esses dois caminhos são públicos. Os demais endpoints da API exigem autenticação.
-
-## Banco de dados e migrations
-
-As migrations ficam em `src/main/resources/db/migration`:
-
-| Migration | Conteúdo |
-|---|---|
-| `V1__tabelas.sql` | Cria tabelas de tipos de usuário, endereços, usuários, restaurantes e itens de cardápio, com chaves estrangeiras. |
-| `V2__inserts.sql` | Insere os tipos `CLIENTE` e `DONO` e usuários locais para autenticação. |
-| `V3__marcar_tipos_usuario_sistema.sql` | Adiciona a indicação de tipo de sistema e marca `CLIENTE` e `DONO` como protegidos. |
-
-Hibernate usa `ddl-auto: validate`: a estrutura esperada pelas entidades é validada, mas a criação e evolução do schema pertencem ao Flyway.
-
-## Autenticação e autorização
-
-Todas as rotas da API, exceto Swagger/OpenAPI, usam **HTTP Basic**. No Postman, escolha **Authorization → Basic Auth** e informe o usuário e a senha.
-
-Usuários criados pelas migrations locais:
-
-| Login | Senha local | Tipo |
-|---|---|---|
-| `cliente` | `123456` | `CLIENTE` |
-| `dono` | `123456` | `DONO` |
-| `dono2` | `123456` | `DONO` |
-
-Essas credenciais são somente para desenvolvimento e testes locais.
-
-- O usuário autenticado é obtido pelo contexto de segurança; o cliente não informa o ID do proprietário no corpo do cadastro.
-- Somente usuários `DONO` podem cadastrar restaurantes e administrar tipos de usuário.
-- A atualização e exclusão de restaurante exigem que o usuário autenticado seja o proprietário daquele restaurante.
-- A criação, atualização e exclusão de item de cardápio também exigem o proprietário do restaurante relacionado.
-- `CLIENTE` e `DONO` são tipos de sistema: a API não permite renomeá-los ou excluí-los. Tipos personalizados podem ser administrados por um `DONO`.
-
-Para conferir a identidade autenticada, use `GET /v1/auth/me`.
-
-## Endpoints da API
-
-Todas as rotas abaixo exigem autenticação Basic, exceto quando indicado. Os IDs nas rotas são UUIDs.
+A API utiliza o prefixo `/v1`. Os identificadores nas rotas são UUIDs. Todas as rotas abaixo exigem autenticação HTTP Basic, exceto Swagger/OpenAPI.
 
 ### Autenticação
 
-| Método | Rota | Acesso | Resposta |
+| Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| `GET` | `/v1/auth/me` | Qualquer usuário autenticado | `200 OK` com ID, login e tipo do usuário autenticado. |
-
-Exemplo:
-
-```json
-{
-  "id": "44444444-4444-4444-4444-444444444444",
-  "login": "dono",
-  "tipoUsuario": "DONO"
-}
-```
+| GET | `/v1/auth/me` | Qualquer usuário autenticado | Retorna o ID, o login e o tipo do usuário autenticado. |
 
 ### Tipos de usuário
 
-| Método | Rota | Acesso | Resposta principal |
+| Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| `POST` | `/v1/tipo-usuario` | `DONO` | `201 Created` |
-| `GET` | `/v1/tipo-usuario` | Autenticado | `200 OK` |
-| `GET` | `/v1/tipo-usuario/{id}` | Autenticado | `200 OK` ou `404 Not Found` |
-| `PUT` | `/v1/tipo-usuario/{id}` | `DONO`; tipos de sistema protegidos | `200 OK` |
-| `DELETE` | `/v1/tipo-usuario/{id}` | `DONO`; tipos de sistema protegidos | `204 No Content` |
+| POST | `/v1/tipo-usuario` | `DONO` | Cria um tipo personalizado. |
+| GET | `/v1/tipo-usuario` | Usuário autenticado | Lista os tipos cadastrados. |
+| GET | `/v1/tipo-usuario/{id}` | Usuário autenticado | Busca um tipo pelo UUID. |
+| PUT | `/v1/tipo-usuario/{id}` | `DONO` | Atualiza um tipo personalizado. |
+| DELETE | `/v1/tipo-usuario/{id}` | `DONO` | Exclui um tipo personalizado. |
 
-Corpo de criação e atualização:
-
-```json
-{
-  "nomeTipo": "GERENTE"
-}
-```
-
-O nome não pode ser vazio. O nome precisa ser único. Criar nome duplicado retorna `409 Conflict`.
+Os tipos de sistema `CLIENTE` e `DONO` são obrigatórios e não podem ser alterados ou excluídos. A associação inicial entre usuários e tipos é feita pelas migrations; a API não expõe CRUD de usuários nem endpoint para administrar essa associação.
 
 ### Restaurantes
 
-| Método | Rota | Acesso | Resposta principal |
+| Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| `POST` | `/v1/restaurantes` | `DONO` | `201 Created` |
-| `GET` | `/v1/restaurantes` | Autenticado | `200 OK` |
-| `GET` | `/v1/restaurantes/{id}` | Autenticado | `200 OK` ou `404 Not Found` |
-| `PUT` | `/v1/restaurantes/{id}` | Proprietário autenticado | `200 OK` |
-| `DELETE` | `/v1/restaurantes/{id}` | Proprietário autenticado | `204 No Content` |
+| POST | `/v1/restaurantes` | `DONO` | Cadastra um restaurante para o usuário autenticado. |
+| GET | `/v1/restaurantes` | Usuário autenticado | Lista os restaurantes. |
+| GET | `/v1/restaurantes/{id}` | Usuário autenticado | Busca um restaurante pelo UUID. |
+| PUT | `/v1/restaurantes/{id}` | Proprietário autenticado | Atualiza um restaurante. |
+| DELETE | `/v1/restaurantes/{id}` | Proprietário autenticado | Exclui um restaurante. |
 
-Corpo de criação e atualização:
+O proprietário é identificado pelas credenciais da requisição. Não envie o ID do usuário no corpo.
+
+Exemplo de corpo para criar ou atualizar:
 
 ```json
 {
@@ -208,21 +121,19 @@ Corpo de criação e atualização:
 }
 ```
 
-O proprietário é definido pelo usuário autenticado. Não envie um ID de usuário no corpo.
-
 ### Itens de cardápio
 
-Os itens são acessados dentro da rota do restaurante ao qual pertencem.
+Os itens são acessados pela rota do restaurante ao qual pertencem.
 
-| Método | Rota | Acesso | Resposta principal |
+| Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| `POST` | `/v1/restaurantes/{restauranteId}/itens-cardapio` | Proprietário autenticado | `201 Created` |
-| `GET` | `/v1/restaurantes/{restauranteId}/itens-cardapio` | Autenticado | `200 OK` |
-| `GET` | `/v1/restaurantes/{restauranteId}/itens-cardapio/{itemCardapioId}` | Autenticado | `200 OK` ou `404 Not Found` |
-| `PUT` | `/v1/restaurantes/{restauranteId}/itens-cardapio/{itemCardapioId}` | Proprietário autenticado | `200 OK` |
-| `DELETE` | `/v1/restaurantes/{restauranteId}/itens-cardapio/{itemCardapioId}` | Proprietário autenticado | `204 No Content` |
+| POST | `/v1/restaurantes/{restauranteId}/itens-cardapio` | Proprietário autenticado | Adiciona um item ao cardápio. |
+| GET | `/v1/restaurantes/{restauranteId}/itens-cardapio` | Usuário autenticado | Lista os itens do restaurante. |
+| GET | `/v1/restaurantes/{restauranteId}/itens-cardapio/{itemCardapioId}` | Usuário autenticado | Busca um item pelo UUID. |
+| PUT | `/v1/restaurantes/{restauranteId}/itens-cardapio/{itemCardapioId}` | Proprietário autenticado | Atualiza um item. |
+| DELETE | `/v1/restaurantes/{restauranteId}/itens-cardapio/{itemCardapioId}` | Proprietário autenticado | Exclui um item. |
 
-Corpo de criação e atualização:
+Exemplo de corpo para criar ou atualizar:
 
 ```json
 {
@@ -234,55 +145,135 @@ Corpo de criação e atualização:
 }
 ```
 
-Nome, descrição e caminho da foto são obrigatórios. O preço deve ser maior que zero e `apenasNoRestaurante` deve ser informado como booleano.
+## Autenticação e autorização
 
-### Observações sobre as respostas
+A API usa HTTP Basic. No Postman, selecione **Authorization → Basic Auth** e informe login e senha. Também é possível usar o botão **Authorize** na interface Swagger.
 
-- As listas são envolvidas em objetos: `restaurantes`, `tipos` e `itens`.
-- A resposta de criação de restaurante e de item inclui o `id` gerado. As respostas de consulta e atualização desses dois recursos não incluem o ID; use o ID recebido na criação para montar as próximas rotas.
-- As respostas de tipo de usuário incluem `id`, `nomeTipo` e `sistema`.
-- Exclusões bem-sucedidas retornam `204 No Content`, sem corpo.
+Usuários de desenvolvimento inseridos pelas migrations:
 
-## Erros HTTP
+| Login | Senha | Tipo |
+|---|---|---|
+| `cliente` | `123456` | `CLIENTE` |
+| `dono` | `123456` | `DONO` |
+| `dono2` | `123456` | `DONO` |
 
-Os erros da aplicação são retornados como `application/problem+json`, com propriedades como `status`, `title`, `detail` e `instance`.
+Essas credenciais são apenas para desenvolvimento e testes locais.
 
-| Status | Significado neste projeto |
+- Todos os endpoints da API exigem autenticação; apenas a documentação Swagger/OpenAPI é pública.
+- Somente usuários `DONO` podem cadastrar restaurantes e administrar tipos de usuário.
+- Alterações e exclusões de restaurantes e itens de cardápio exigem que o usuário autenticado seja o proprietário do restaurante.
+- Os tipos de sistema `CLIENTE` e `DONO` são protegidos contra alteração e exclusão.
+
+## Banco de dados
+
+A aplicação utiliza PostgreSQL 17. O Flyway controla a criação e evolução do schema, enquanto o Hibernate valida a estrutura (`ddl-auto: validate`). As migrations ficam em `src/main/resources/db/migration`:
+
+| Migration | Conteúdo |
 |---|---|
-| `400 Bad Request` | JSON inválido, campo obrigatório ausente ou dado que não passa pela validação. |
-| `401 Unauthorized` | Requisição sem credenciais válidas. |
-| `403 Forbidden` | Usuário autenticado sem perfil `DONO` ou que não é proprietário do recurso. |
-| `404 Not Found` | Restaurante, tipo ou item não encontrado. Um item consultado dentro do restaurante errado também é tratado como não encontrado. |
-| `409 Conflict` | Tipo de usuário duplicado ou tentativa de alterar/excluir tipo de sistema. |
+| `V1__tabelas.sql` | Cria as tabelas e relacionamentos da aplicação. |
+| `V2__inserts.sql` | Insere os tipos de sistema, usuários e endereços de desenvolvimento. |
+| `V3__marcar_tipos_usuario_sistema.sql` | Marca `CLIENTE` e `DONO` como tipos protegidos. |
 
-Exemplo de resposta de erro:
+## Variáveis de ambiente
 
-```json
-{
-  "type": "about:blank",
-  "title": "Forbidden",
-  "status": 403,
-  "detail": "Apenas usuários com perfil DONO podem cadastrar restaurantes",
-  "instance": "/v1/restaurantes"
-}
+O Docker Compose aceita estas variáveis, usando os valores abaixo quando não forem definidas:
+
+```dotenv
+DATASOURCE_DB=restaurantes
+DATASOURCE_USERNAME=postgres
+DATASOURCE_PASSWORD=postgres
 ```
+
+Elas podem ser definidas no ambiente ou em um arquivo `.env` na raiz do projeto. O arquivo `.env` não deve ser versionado. A conexão padrão da aplicação executada diretamente no computador é `jdbc:postgresql://localhost:5432/restaurantes`; para alterá-la, defina também `DATASOURCE_URL`.
+
+## Execução com Docker Compose
+
+Com Docker em execução, na raiz do projeto:
+
+```powershell
+docker compose up --build -d
+```
+
+O Compose constrói a imagem Java, inicia PostgreSQL e API e aguarda o banco ficar saudável antes de iniciar a aplicação. O Dockerfile usa Java 21 e extrai o JAR em layers para que dependências e código da aplicação sejam armazenados separadamente na imagem.
+
+A API fica disponível em `http://localhost:8080`. Para acompanhar os logs:
+
+```powershell
+docker compose logs -f restaurantes-api
+```
+
+Para parar os containers:
+
+```powershell
+docker compose down
+```
+
+Os dados do banco ficam no volume `postgres_data`. Para remover o volume e os dados persistidos também:
+
+```powershell
+docker compose down -v
+```
+
+## Execução sem Docker
+
+Inicie apenas o PostgreSQL pelo Compose:
+
+```powershell
+docker compose up -d postgres
+```
+
+Em seguida, inicie a API na raiz do projeto:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+No Linux ou macOS:
+
+```bash
+docker compose up -d postgres
+./mvnw spring-boot:run
+```
+
+Na inicialização, o Flyway aplica as migrations automaticamente. A API fica disponível em `http://localhost:8080`.
+
+## Swagger / OpenAPI
+
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+- Especificação OpenAPI em JSON: <http://localhost:8080/v3/api-docs>
+
+Os dois endereços ficam públicos. Para executar endpoints da API pela interface, use **Authorize** e informe as credenciais HTTP Basic.
+
+## Postman
+
+Para testar a API pelo Postman, use a URL base `http://localhost:8080` e configure **Authorization → Basic Auth** com uma das contas de desenvolvimento. Os endpoints e exemplos de corpo estão descritos nas seções acima e também na interface Swagger.
 
 ## Testes e cobertura
 
-Os testes unitários cobrem regras de domínio e casos de uso. Os testes de integração exercitam endpoints, segurança, persistência JPA e migrations. A suíte usa H2 em modo de compatibilidade PostgreSQL e não precisa acessar o banco de desenvolvimento.
-
-No Windows/PowerShell:
+O projeto contém testes unitários para domínio e casos de uso e testes de integração para endpoints, segurança e persistência. O Maven Wrapper executa a suíte:
 
 ```powershell
 .\mvnw.cmd test
 .\mvnw.cmd verify
 ```
 
-No Linux/macOS:
+No Linux ou macOS:
 
 ```bash
 ./mvnw test
 ./mvnw verify
 ```
 
-`verify` executa os testes, gera o relatório JaCoCo e verifica o limite mínimo configurado de 80% de cobertura de linhas. O relatório HTML é criado em `target/site/jacoco/index.html`.
+O JaCoCo gera o relatório HTML em `target/site/jacoco/index.html`. A meta mínima de cobertura de linhas configurada no build é 80%.
+
+## Respostas de erro
+
+Os erros são devolvidos no formato `application/problem+json`:
+
+| Status | Significado |
+|---|---|
+| `400 Bad Request` | Corpo inválido ou campo que não passou na validação. |
+| `401 Unauthorized` | Credenciais ausentes ou inválidas. |
+| `403 Forbidden` | Usuário autenticado sem permissão para a operação ou que não é proprietário do recurso. |
+| `404 Not Found` | Restaurante, tipo ou item não encontrado. |
+| `409 Conflict` | Tipo duplicado ou tentativa de alterar/excluir um tipo de sistema. |
