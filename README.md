@@ -196,7 +196,7 @@ Com Docker em execução, na raiz do projeto execute primeiro:
 .\mvnw.cmd clean verify
 ```
 
-Depois:
+Para executar os testes, depois:
 
 ```powershell
 docker compose up --build -d
