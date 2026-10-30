@@ -21,8 +21,10 @@ Para executar a aplicação com Docker Compose, instale:
 
 | Requisito | Descrição |
 |---|---|
-| Docker Desktop | Executa os containers da aplicação e do PostgreSQL. |
-| Docker Compose | Incluído no Docker Desktop atual. |
+| Docker Desktop | Necessário para executar os containers da API e do PostgreSQL. |
+| Git | Necessário para clonar o repositório. |
+| Postman | Recomendado para executar e validar os testes da API. |
+
 
 Para executar a aplicação diretamente no computador, também é necessário ter Java 21. O projeto inclui Maven Wrapper, portanto não é necessário instalar Maven separadamente.
 
