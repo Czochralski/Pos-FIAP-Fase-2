@@ -1,0 +1,2693 @@
+{
+  "info": {
+    "_postman_id": "b6a87f2c-4a7f-468a-ba98-f22aa31f6876",
+    "name": "Tech Challenge Fase 2",
+    "description": "Collection de demonstração e verificação da API. Use baseUrl=http://localhost:8080 e execute as pastas na ordem apresentada. As contas cliente, dono e dono2 são dados de demonstração da migration V2, com senha 123456. A associação de tipos aos usuários é feita no banco, conforme definido para o projeto; não há endpoint de CRUD de usuários. O fluxo cria e remove um tipo personalizado, dois restaurantes e dois itens de cardápio. Os testes de proteção usam os UUIDs fixos de CLIENTE e DONO.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24427194",
+    "_collection_link": "https://go.postman.co/collection/24427194-b6a87f2c-4a7f-468a-ba98-f22aa31f6876?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Autenticação",
+      "item": [
+        {
+          "name": "Credencial incorreta (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{wrongPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Confirma que senha incorreta não autentica."
+          },
+          "response": []
+        },
+        {
+          "name": "Credencial correta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {\n    pm.response.to.have.status(200);\n});\n\nconst response = pm.response.json();\npm.test(\"Identifica o DONO autenticado\", function () {\n    pm.expect(response.login).to.eql(\"dono\");\n    pm.expect(response.tipoUsuario).to.eql(\"DONO\");\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Confirma autenticação Basic e identifica o usuário autenticado."
+          },
+          "response": []
+        }
+      ],
+      "description": "Use Basic Auth. As contas abaixo são dados de demonstração semeados pela migration V2."
+    },
+    {
+      "name": "Tipo de Usuário",
+      "item": [
+        {
+          "name": "Criar tipo personalizado (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 201\", function () {\n    pm.response.to.have.status(201);\n});\n\nconst response = pm.response.json();\npm.test(\"Retorna ID do tipo criado\", function () {\n    pm.expect(response.id).to.be.a(\"string\").and.not.empty;\n});\npm.collectionVariables.set(\"tipoUsuarioId\", response.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"GERENTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar tipo existente DONO (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"DONO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar tipo sem ser DONO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {\n    pm.response.to.have.status(403);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"TIPO_NAO_AUTORIZADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar tipo com nome vazio (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \" \"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar tipos (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {\n    pm.response.to.have.status(200);\n});\n\nconst response = pm.response.json();\npm.test(\"Resposta contém a lista de tipos\", function () {\n    pm.expect(response.tipos).to.be.an(\"array\");\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar tipo criado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna o tipo criado\", function () {",
+                  "    pm.expect(response.id).to.eql(pm.collectionVariables.get(\"tipoUsuarioId\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar tipo inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/ed0d02d7-fbd4-465d-ba75-f890b2bf2623",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "ed0d02d7-fbd4-465d-ba75-f890b2bf2623"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar tipo sem ser DONO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"TIPO_NAO_AUTORIZADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar usando nome já existente (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"DONO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar com nome vazio (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar tipo criado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna o novo nome\", function () {",
+                  "    pm.expect(response.nomeTipo).to.eql(\"GESTOR\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"GESTOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Impedir atualização de CLIENTE protegido (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"CLIENTE_ALTERADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/11111111-1111-1111-1111-111111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Impedir atualização de DONO protegido (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeTipo\": \"DONO_ALTERADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/22222222-2222-2222-2222-222222222222",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir tipo sem ser DONO (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Impedir exclusão de CLIENTE protegido (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/11111111-1111-1111-1111-111111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "11111111-1111-1111-1111-111111111111"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Impedir exclusão de DONO protegido (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/22222222-2222-2222-2222-222222222222",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir tipo personalizado (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/tipo-usuario/{{tipoUsuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "tipo-usuario",
+                "{{tipoUsuarioId}}"
+              ]
+            },
+            "description": "Remove o tipo temporário criado no início desta pasta."
+          },
+          "response": []
+        }
+      ],
+      "description": "Cobre CRUD, autorização, validação, duplicidade e proteção dos registros fixos CLIENTE e DONO."
+    },
+    {
+      "name": "Restaurante",
+      "item": [
+        {
+          "name": "Criar restaurante principal (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna ID do restaurante criado\", function () {",
+                  "    pm.expect(response.id).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set(\"restauranteId\", response.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Restaurante Central\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes"
+              ]
+            },
+            "description": "O dono vem da autenticação; o corpo não contém donoId."
+          },
+          "response": []
+        },
+        {
+          "name": "Criar restaurante como CLIENTE (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"REST_POSTMAN_NAO_AUTORIZADO\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar restaurante com endereço ausente (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"RESTAURANTE_INVALIDO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar restaurante de DONO 2 (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna ID do segundo restaurante\", function () {",
+                  "    pm.expect(response.id).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set(\"restaurante2Id\", response.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Sabor Nordestino\",\n  \"endereco\": {\n    \"rua\": \"Avenida Boa Viagem\",\n    \"numero\": \"850\",\n    \"bairro\": \"Boa Viagem\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"51011-000\"\n  },\n  \"tipoCozinha\": \"Nordestina\",\n  \"horarioFuncionamento\": \"10:00 às 23:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar restaurantes (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Resposta contém a lista de restaurantes\", function () {",
+                  "    pm.expect(response.restaurantes).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar restaurante principal (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna o restaurante criado\", function () {",
+                  "    pm.expect(response.nome).to.eql(\"Restaurante Central\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar restaurante inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/ed0d02d7-fbd4-465d-ba75-f890b2bf2623",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "ed0d02d7-fbd4-465d-ba75-f890b2bf2623"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar restaurante principal (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {\n    pm.response.to.have.status(200);\n});\n\nconst response = pm.response.json();\npm.test(\"Atualiza o bairro do endereço\", function () {\n    pm.expect(response.endereco.bairro).to.eql(\"Centro Atualizado\");\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Restaurante Central\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro Atualizado\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-222\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar restaurante de outro dono (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"NAO_AUTORIZADO\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar restaurante inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"RESTAURANTE_INEXISTENTE\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/ed0d02d7-fbd4-465d-ba75-f890b2bf2623",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "ed0d02d7-fbd4-465d-ba75-f890b2bf2623"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir restaurante de outro dono (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir restaurante inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/ed0d02d7-fbd4-465d-ba75-f890b2bf2623",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "ed0d02d7-fbd4-465d-ba75-f890b2bf2623"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Cobre criação pelo dono autenticado, consultas e autorização para alterar/remover restaurantes."
+    },
+    {
+      "name": "Item de Cardápio",
+      "item": [
+        {
+          "name": "Criar item 1 (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"itemCardapioId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna ID do item criado\", function () {",
+                  "    pm.expect(response.id).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set(\"itemCardapioId\", response.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Filé Mignon ao Molho Madeira\",\n  \"descricao\": \"Filé mignon grelhado acompanhado de molho madeira e batatas.\",\n  \"preco\": 49.9,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://www.oetker.com.br/assets/recipes/assets/00b004a11e324806a976f35f718bce9b/1272x764/molho-madeira-novo.webp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar item para restaurante de outro dono (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {\n    pm.response.to.have.status(403);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Risoto de Camarão ao Limão Siciliano\",\n  \"descricao\": \"Risoto cremoso preparado com camarões salteados, parmesão e limão.\",\n  \"preco\": 42.9,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://momsbestrecipes.com/media/images/A-shallow-bowl-of-creamy-lemon-garlic-shrimp-risot_1776472672266990944.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar item com preço zero (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 400\", function () {\n    pm.response.to.have.status(400);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Filé Mignon ao Molho Madeira\",\n  \"descricao\": \"Filé mignon grelhado acompanhado de molho madeira e batatas.\",\n  \"preco\": 0,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://www.oetker.com.br/assets/recipes/assets/00b004a11e324806a976f35f718bce9b/1272x764/molho-madeira-novo.webp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar item 2 (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"itemCardapio2Id\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 201\", function () {\n    pm.response.to.have.status(201);\n});\n\nconst response = pm.response.json();\npm.test(\"Retorna ID do segundo item criado\", function () {\n    pm.expect(response.id).to.be.a(\"string\").and.not.empty;\n});\npm.collectionVariables.set(\"itemCardapio2Id\", response.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Risoto de Camarão ao Limão Siciliano\",\n  \"descricao\": \"Risoto cremoso preparado com camarões salteados, parmesão e limão.\",\n  \"preco\": 42.9,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://momsbestrecipes.com/media/images/A-shallow-bowl-of-creamy-lemon-garlic-shrimp-risot_1776472672266990944.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar itens do restaurante (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {\n    pm.response.to.have.status(200);\n});\n\nconst response = pm.response.json();\npm.test(\"Resposta contém a lista de itens\", function () {\n    pm.expect(response.itens).to.be.an(\"array\");\n    pm.expect(response.itens.length).to.be.at.least(2);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar item 1 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna o item solicitado\", function () {",
+                  "    pm.expect(response.nome).to.eql(\"Filé Mignon ao Molho Madeira\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/{{itemCardapioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "{{itemCardapioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar item inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clienteUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/ed0d02d7-fbd4-465d-ba75-f890b2bf2623",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "ed0d02d7-fbd4-465d-ba75-f890b2bf2623"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar item 1 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Retorna o preço atualizado\", function () {",
+                  "    pm.expect(response.preco).to.eql(39.9);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Filé Mignon ao Molho Madeira\",\n  \"descricao\": \"Filé mignon grelhado com molho madeira e batatas.\",\n  \"preco\": 39.9,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://www.oetker.com.br/assets/recipes/assets/00b004a11e324806a976f35f718bce9b/1272x764/molho-madeira-novo.webp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/{{itemCardapioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "{{itemCardapioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar item como outro dono (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Atualização não autorizada\",\n  \"descricao\": \"Teste de autorização.\",\n  \"preco\": 49.9,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://www.oetker.com.br/assets/recipes/assets/00b004a11e324806a976f35f718bce9b/1272x764/molho-madeira-novo.webp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/{{itemCardapioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "{{itemCardapioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Usar item com restaurante diferente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Item de outro restaurante\",\n  \"descricao\": \"O item não pertence ao restaurante da URL.\",\n  \"preco\": 49.9,\n  \"apenasNoRestaurante\": false,\n  \"foto\": \"https://www.oetker.com.br/assets/recipes/assets/00b004a11e324806a976f35f718bce9b/1272x764/molho-madeira-novo.webp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restaurante2Id}}/itens-cardapio/{{itemCardapioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restaurante2Id}}",
+                "itens-cardapio",
+                "{{itemCardapioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir item como outro dono (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/{{itemCardapioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "{{itemCardapioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir item inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/ed0d02d7-fbd4-465d-ba75-f890b2bf2623",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "ed0d02d7-fbd4-465d-ba75-f890b2bf2623"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir item 1 (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/{{itemCardapioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "{{itemCardapioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir item 2 (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}/itens-cardapio/{{itemCardapio2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}",
+                "itens-cardapio",
+                "{{itemCardapio2Id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir restaurante 2 após os testes (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{dono2Username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restaurante2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restaurante2Id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Limpar restaurante principal (204)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Retorna HTTP 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{donoUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{testPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/restaurantes/{{restauranteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "restaurantes",
+                "{{restauranteId}}"
+              ]
+            },
+            "description": "Executada ao final, depois de remover os itens do cardápio."
+          },
+          "response": []
+        }
+      ],
+      "description": "Execute depois da pasta Restaurante. Cobre CRUD, validação, autorização, associação item/restaurante e limpeza dos dados temporários."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "clienteUsername",
+      "value": "cliente"
+    },
+    {
+      "key": "donoUsername",
+      "value": "dono"
+    },
+    {
+      "key": "dono2Username",
+      "value": "dono2"
+    },
+    {
+      "key": "testPassword",
+      "value": "123456"
+    },
+    {
+      "key": "wrongPassword",
+      "value": "654321"
+    },
+    {
+      "key": "tipoUsuarioId",
+      "value": ""
+    },
+    {
+      "key": "restauranteId",
+      "value": ""
+    },
+    {
+      "key": "restaurante2Id",
+      "value": ""
+    },
+    {
+      "key": "itemCardapioId",
+      "value": ""
+    },
+    {
+      "key": "itemCardapio2Id",
+      "value": ""
+    }
+  ]
+}
