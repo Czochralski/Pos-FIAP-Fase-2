@@ -190,7 +190,13 @@ Elas podem ser definidas no ambiente ou em um arquivo `.env` na raiz do projeto.
 
 ## Execução com Docker Compose
 
-Com Docker em execução, na raiz do projeto:
+Com Docker em execução, na raiz do projeto execute primeiro:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+Depois:
 
 ```powershell
 docker compose up --build -d
