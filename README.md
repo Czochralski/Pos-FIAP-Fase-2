@@ -69,42 +69,6 @@ O projeto segue a **Clean Architecture**: as regras de negócio ficam no núcleo
 - **`infra.config` — composição da aplicação:** configura segurança e cria os componentes, conectando os casos de uso aos adaptadores.
 - **Spring MVC, Spring Security, JPA, Flyway e PostgreSQL** são detalhes externos de entrega e persistência.
 
-O fluxo de uma chamada começa no adaptador HTTP e segue para a fachada e o caso de uso. Quando precisa persistir dados, o caso de uso chama uma porta; o adaptador JPA atende esse contrato. Assim, o núcleo não precisa conhecer o banco.
-
-```mermaid
-flowchart LR
-    subgraph Infra[Adaptadores e infraestrutura — infra]
-        Web[infra.web — REST e JSON]
-        Security[infra.security]
-        Jpa[infra.database.jpa]
-        Repository[Spring Data JPA]
-        Database[(PostgreSQL)]
-        Config[infra.config — composição]
-    end
-
-    subgraph Application[Regras da aplicação — core]
-        Controller[core.controller]
-        UseCase[core.usecase]
-        Port[core.gateway]
-        Dto[core.dto]
-    end
-
-    Domain[core.domain — regras essenciais]
-
-    Web --> Controller
-    Web --> Dto
-    Controller --> UseCase
-    UseCase --> Domain
-    UseCase --> Dto
-    UseCase --> Port
-    Jpa -. implementa a porta .-> Port
-    Jpa --> Repository --> Database
-    Security --> Repository
-    Config -. conecta .-> Web
-    Config -. conecta .-> UseCase
-    Config -. conecta .-> Jpa
-```
-
 ## Versionamento e endpoints
 
 A API utiliza o prefixo `/v1`. Os identificadores nas rotas são UUIDs. Todas as rotas abaixo exigem autenticação HTTP Basic, exceto Swagger/OpenAPI.
@@ -249,29 +213,6 @@ Os dados do banco ficam no volume `postgres_data`. Para remover o volume e os da
 ```powershell
 docker compose down -v
 ```
-
-## Execução sem Docker
-
-Inicie apenas o PostgreSQL pelo Compose:
-
-```powershell
-docker compose up -d postgres
-```
-
-Em seguida, inicie a API na raiz do projeto:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-No Linux ou macOS:
-
-```bash
-docker compose up -d postgres
-./mvnw spring-boot:run
-```
-
-Na inicialização, o Flyway aplica as migrations automaticamente. A API fica disponível em `http://localhost:8080`.
 
 ## Swagger / OpenAPI
 
