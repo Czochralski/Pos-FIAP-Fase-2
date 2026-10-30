@@ -49,24 +49,60 @@ src/
 └── test/java/
 ```
 
-### Arquitetura / camadas
+## Arquitetura — Clean Architecture
 
-- **Core** contém o domínio, os casos de uso, as interfaces de persistência e os DTOs. Essa camada concentra as regras de negócio e não depende dos detalhes do banco ou da web.
-- **Controllers do core** encaminham as chamadas aos casos de uso.
-- **Gateways** definem as operações de persistência necessárias ao core.
-- **Infraestrutura web** expõe os endpoints REST, recebe e devolve JSON e converte as chamadas HTTP para os objetos usados pelo core.
-- **Infraestrutura JPA** implementa os gateways usando entidades e repositórios Spring Data.
-- **Segurança e configuração** conectam autenticação, banco de dados, casos de uso e endpoints.
+O projeto segue a **Clean Architecture**: as regras de negócio ficam no núcleo e não dependem de Spring, HTTP, JPA ou PostgreSQL. A regra de dependência aponta para dentro: a infraestrutura implementa os contratos definidos pelo núcleo.
+
+### Regras de negócio e contratos internos
+
+- **`core.domain` — regras de negócio essenciais:** entidades e invariantes de `Restaurante`, `Endereco`, `TipoUsuario` e `ItemCardapio`.
+- **`core.usecase` — regras da aplicação:** casos de uso que coordenam operações, aplicam autorização e usam as interfaces de saída.
+- **`core.gateway` — portas de saída:** contratos de persistência que o núcleo precisa; não conhecem JPA ou Spring Data.
+- **`core.dto` — modelos de dados dos casos de uso:** dados de entrada e saída usados no limite entre a API e os casos de uso.
+- **`core.controller` — fachadas de entrada da aplicação:** encaminham as chamadas recebidas para os casos de uso.
+
+### Adaptadores e infraestrutura
+
+- **`infra.web` — adaptador de entrada HTTP:** recebe as requisições REST, valida e converte JSON para os modelos de entrada do núcleo e transforma os resultados em respostas HTTP.
+- **`infra.database.jpa` — adaptador de saída para persistência:** implementa as portas `core.gateway` usando repositórios Spring Data JPA. Os mappers convertem entre o domínio e as entidades JPA.
+- **`infra.security` — adaptador de autenticação:** integra os usuários existentes com Spring Security e fornece o principal autenticado à API.
+- **`infra.config` — composição da aplicação:** configura segurança e cria os componentes, conectando os casos de uso aos adaptadores.
+- **Spring MVC, Spring Security, JPA, Flyway e PostgreSQL** são detalhes externos de entrega e persistência.
+
+O fluxo de uma chamada começa no adaptador HTTP e segue para a fachada e o caso de uso. Quando precisa persistir dados, o caso de uso chama uma porta; o adaptador JPA atende esse contrato. Assim, o núcleo não precisa conhecer o banco.
 
 ```mermaid
 flowchart LR
-    Web[infra.web — API REST] --> Controller[core.controller]
-    Controller --> UseCase[core.usecase]
-    UseCase --> Domain[core.domain]
-    UseCase --> Gateway[core.gateway]
-    Jpa[infra.database.jpa] -. implementa .-> Gateway
-    Jpa --> Repository[Spring Data JPA]
-    Repository --> Database[(PostgreSQL)]
+    subgraph Infra[Adaptadores e infraestrutura — infra]
+        Web[infra.web — REST e JSON]
+        Security[infra.security]
+        Jpa[infra.database.jpa]
+        Repository[Spring Data JPA]
+        Database[(PostgreSQL)]
+        Config[infra.config — composição]
+    end
+
+    subgraph Application[Regras da aplicação — core]
+        Controller[core.controller]
+        UseCase[core.usecase]
+        Port[core.gateway]
+        Dto[core.dto]
+    end
+
+    Domain[core.domain — regras essenciais]
+
+    Web --> Controller
+    Web --> Dto
+    Controller --> UseCase
+    UseCase --> Domain
+    UseCase --> Dto
+    UseCase --> Port
+    Jpa -. implementa a porta .-> Port
+    Jpa --> Repository --> Database
+    Security --> Repository
+    Config -. conecta .-> Web
+    Config -. conecta .-> UseCase
+    Config -. conecta .-> Jpa
 ```
 
 ## Versionamento e endpoints
