@@ -52,6 +52,6 @@ public class AtualizarTipoUsuarioUsecase {
 
         TipoUsuario atualizado = gateway.atualizar(tipo);
 
-        return new TipoUsuarioOutputDto(atualizado.getId(), atualizado.getNomeTipo(), atualizado.isSistema());
+        return new TipoUsuarioOutputDto(atualizado.getNomeTipo(), atualizado.isSistema());
     }
 }
