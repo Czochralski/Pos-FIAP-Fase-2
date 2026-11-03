@@ -75,7 +75,8 @@ class TipoUsuarioUsecasesTest {
         assertEquals(1, lista.tipos().size());
         assertEquals("GERENTE", lista.tipos().getFirst().nomeTipo());
         assertFalse(lista.tipos().getFirst().sistema());
-        assertEquals(gerente.getId(), encontrado.id());
+        assertEquals("GERENTE", encontrado.nomeTipo());
+        assertFalse(encontrado.sistema());
         assertThrows(TipoUsuarioNaoEncontradoException.class,
                 () -> BuscarTipoUsuarioUsecase.create(gateway).run(UUID.randomUUID()));
     }
@@ -92,7 +93,7 @@ class TipoUsuarioUsecasesTest {
         var atualizado = AtualizarTipoUsuarioUsecase.create(gateway, usuarioGateway)
                 .run(tipoId, new AtualizarTipoUsuarioInputDto(" GESTOR "), donoId);
         assertEquals("GESTOR", atualizado.nomeTipo());
-        assertEquals(tipoId, atualizado.id());
+        assertFalse(atualizado.sistema());
 
         when(usuarioGateway.usuarioDono(donoId)).thenReturn(false);
         assertThrows(DonoRestauranteInvalidoException.class,
@@ -132,8 +133,8 @@ class TipoUsuarioUsecasesTest {
         var resultado = AtualizarTipoUsuarioUsecase.create(gateway, usuarioGateway)
                 .run(tipoId, new AtualizarTipoUsuarioInputDto("GERENTE"), donoId);
 
-        assertEquals(tipoId, resultado.id());
         assertEquals("GERENTE", resultado.nomeTipo());
+        assertFalse(resultado.sistema());
         verify(gateway).atualizar(tipo);
     }
 
