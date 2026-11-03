@@ -2,7 +2,6 @@ package com.czo.restaurantes_api.core.usecase.tipoUsuario;
 
 import com.czo.restaurantes_api.core.domain.TipoUsuario;
 import com.czo.restaurantes_api.core.dto.tipoUsuario.CriarTipoUsuarioInputDto;
-import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputDto;
 import com.czo.restaurantes_api.core.dto.tipoUsuario.TipoUsuarioOutputInsertDto;
 import com.czo.restaurantes_api.core.exception.DonoRestauranteInvalidoException;
 import com.czo.restaurantes_api.core.exception.TipoUsuarioJaExisteException;
