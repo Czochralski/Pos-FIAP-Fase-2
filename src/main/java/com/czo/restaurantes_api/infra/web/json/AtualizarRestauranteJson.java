@@ -10,19 +10,20 @@ import java.util.UUID;
 public record AtualizarRestauranteJson(
 
         @Schema(description = "Nome do restaurante.", example = "Restaurante Central")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String nome,
 
         @Schema(description = "Endereço do restaurante.")
-        @NotNull @Valid
+        @NotNull (message = "Campo Obrigatório")
+        @Valid
         EnderecoJson endereco,
 
         @Schema(description = "Tipo de cozinha.", example = "Brasileira")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String tipoCozinha,
 
         @Schema(description = "Horário de funcionamento.", example = "10:00 às 22:00")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String horarioFuncionamento
 ) {
 }

@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "b6a87f2c-4a7f-468a-ba98-f22aa31f6876",
+    "_postman_id": "34db4232-fad0-4ac0-adf0-863c4c4db24f",
     "name": "Tech Challenge Fase 2",
     "description": "Collection de demonstração e verificação da API. Use baseUrl=http://localhost:8080 e execute as pastas na ordem apresentada. As contas cliente, dono e dono2 são dados de demonstração da migration V2, com senha 123456. A associação de tipos aos usuários é feita no banco, conforme definido para o projeto; não há endpoint de CRUD de usuários. O fluxo cria e remove um tipo personalizado, dois restaurantes e dois itens de cardápio. Os testes de proteção usam os UUIDs fixos de CLIENTE e DONO.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "24427194",
-    "_collection_link": "https://go.postman.co/collection/24427194-b6a87f2c-4a7f-468a-ba98-f22aa31f6876?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/24427194-34db4232-fad0-4ac0-adf0-863c4c4db24f?source=collection_link"
   },
   "item": [
     {
@@ -399,14 +399,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Retorna HTTP 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const response = pm.response.json();",
-                  "pm.test(\"Retorna o tipo criado\", function () {",
-                  "    pm.expect(response.id).to.eql(pm.collectionVariables.get(\"tipoUsuarioId\"));",
-                  "});"
+                  "pm.test(\"Retorna HTTP 200\", function () {\n    pm.response.to.have.status(200);\n});\n\nconst response = pm.response.json();\npm.test(\"Retorna o tipo criado\", function () {\n    pm.expect(response.nomeTipo).to.eql(\"GERENTE\");\n    pm.expect(response.sistema).to.eql(false);\n});"
                 ]
               }
             }
@@ -1131,9 +1124,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Retorna HTTP 403\", function () {",
-                  "    pm.response.to.have.status(403);",
-                  "});"
+                  "pm.test(\"Retorna HTTP 403\", function () {\n    pm.response.to.have.status(403);\n});"
                 ]
               }
             }
@@ -1163,7 +1154,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"REST_POSTMAN_NAO_AUTORIZADO\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
+              "raw": "{\n  \"nome\": \"USUARIO_NAO_AUTORIZADO\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1184,16 +1175,14 @@
           "response": []
         },
         {
-          "name": "Criar restaurante com endereço ausente (400)",
+          "name": "Criar restaurante com informações de endereço ausente (400)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Retorna HTTP 400\", function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});"
+                  "pm.test(\"Retorna HTTP 400\", function () {\n    pm.response.to.have.status(400);\n});"
                 ]
               }
             }
@@ -1223,7 +1212,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"RESTAURANTE_INVALIDO\"\n}",
+              "raw": "{\n  \"nome\": \"Restaurante Central\",\n  \"endereco\": {\n    \"rua\": \"Rua das Flores\",\n    \"numero\": \"100\",\n    \"bairro\": \"\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\",\n    \"cep\": \"50000-000\"\n  },\n  \"tipoCozinha\": \"Brasileira\",\n  \"horarioFuncionamento\": \"11:00 às 22:00\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

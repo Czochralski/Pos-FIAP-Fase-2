@@ -6,27 +6,27 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record EnderecoJson(
 
         @Schema(description = "Logradouro do endereço.", example = "Rua das Flores")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String rua,
 
         @Schema(description = "Número do imóvel.", example = "123")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String numero,
 
         @Schema(description = "Bairro.", example = "Centro")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String bairro,
 
         @Schema(description = "Cidade.", example = "Recife")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String cidade,
 
         @Schema(description = "Sigla ou nome do estado.", example = "PE")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String estado,
 
         @Schema(description = "CEP.", example = "50000-000")
-        @NotBlank
+        @NotBlank(message = "Campo Obrigatório")
         String cep
 ) {
 }
